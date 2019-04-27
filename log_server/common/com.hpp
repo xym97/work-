@@ -40,7 +40,7 @@ class Common
       return true;
     }
   private:
-}
+};
 
 
 

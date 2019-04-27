@@ -1,6 +1,5 @@
 
 #include<vector>
-#include"../log/log.hpp"
 #include"../common/com.hpp"
 
 #include<boost/filesystem/path.hpp>
@@ -42,31 +41,49 @@ bool enum_log(const std::string& glog_path, std::vector<std::string>* log_list)
 bool parse_title(const std::string& log_info, std::string* title)
 {
   size_t e_index = log_info.find("\n");
+  if(e_index == std::string::npos)
+  {
+    tolog << "find \\n error!";
+    return false;
+  }
   *title = log_info.substr(0,e_index);
+  return true;
+}
+
+bool parse_content(std::string& content)
+{
+  for(auto c : content)
+  {
+    if(c == '\n')
+      c = ' ';
+  }
   return true;
 }
 
 bool parse_file(const std::string& log_path, log_doc* parsed_log_doc)
 { 
-  std::string log_info;
-  bool ret = Common::ReadFile(log_path, &log_info);
+  //std::string log_info;
+  bool ret = Common::ReadFile(log_path,/*&log_info*/&parsed_log_doc->content );
   if(false == ret)
   {
     tolog << "ReadFile error!";
     return false;
   }
-  ret = parse_title(log_info , &parsed_log_doc->title);
+  //size_t content_b_index;
+  ret = parse_title(/*log_info*/parsed_log_doc->content , &parsed_log_doc->title);
   if(false == ret)
   {
     tolog << "parse_title error!";
     return false;
   }
-  ret = parse_context()
+  ret = parse_content(parsed_log_doc->content);
+  return true;
 }
 
-void write_to_outlog(const log_doc& doc, const std::string& glog_output)
+void write_to_outlog(const log_doc& doc, std::ofstream& olog)
 {
-
+  std::string line = doc.title + '\3' + doc.content + '\n';
+  olog.write(line.c_str() , line.length());
 }
 
 int main()
@@ -94,7 +111,7 @@ int main()
       tolog << "parse file error path:";
       continue;
     }
-    write_to_outlog(info, glog_output);
+    write_to_outlog(info, olog);
   }
   olog.close();
   return 0;

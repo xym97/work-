@@ -165,7 +165,6 @@ int Server::noBlockRead(int fd, char* buff, size_t size)
 
 void Server::write_to_file(string& arg)
 {
-  cout << arg <<endl;
   {
   std::unique_lock<std::mutex> lg_ofmut(_ofmut);
   cout << "in vtow" << endl;
@@ -207,7 +206,8 @@ void Server::work_func(int arg)
   if(rsize > 0)
   {
      vector<string> logs;
-     bool IsComplete = split(string(buff + sizeof(in_addr)) ,"\\n",logs, fd);
+     bool IsComplete = split(string(buff) ,"\\3",logs, fd);
+     static bool flag = false;
      auto it = logs.begin();
      string write;
      //struct in_addr* addr = (in_addr*)buff;
@@ -218,24 +218,27 @@ void Server::work_func(int arg)
      {
        write += time_to_write_log_farmat(get_cur_time());
        //write += ip; 
-       if(!IsComplete)
+       write += ' ';
+       if(!IsComplete && flag)
        {
         auto rlit = fd_read_leave_hash.find(fd);
         write += rlit->second;
+        fd_read_leave_hash.erase(fd);
         IsComplete = true;
        }
-       write += ' ';
        write += *it++;
        write += "\n";
      }
+     if(!IsComplete)
+       flag = true;
      cout << write << endl;
      //std::thread wf(write_to_file, std::ref(write));
      //wf.detach();
      write_to_file(write);
-     epoll_event ev;
-	   ev.events = EPOLLIN;
-     ev.data.fd = fd;
-	   epoll_ctl(epfd, EPOLL_CTL_MOD,fd ,&ev);
+     //epoll_event ev;
+	   //ev.events = EPOLLIN;
+     //ev.data.fd = fd;
+	   //epoll_ctl(epfd, EPOLL_CTL_MOD,fd ,&ev);
   }
   else if(rsize == 0)
   {
@@ -341,10 +344,9 @@ int Server::recvMsgHandler(int listen_sock)
 	        int new_fd = evs[i].data.fd;
           work_func(new_fd);          
           //printf("task size = %d\n", size);
-
-          ev.events &= ~EPOLLIN;
-          ev.data.fd = evs[i].data.fd;
-          epoll_ctl(epfd, EPOLL_CTL_MOD, evs[i].data.fd,&ev);
+          //ev.events &= ~EPOLLIN;
+          //ev.data.fd = evs[i].data.fd;
+          //epoll_ctl(epfd, EPOLL_CTL_MOD, evs[i].data.fd,&ev);
 				}
 			}
 		
