@@ -1,5 +1,6 @@
 
 #include"../log/log.hpp"
+#include<boost/algorithm/string.hpp>
 
 #pragma once
 
@@ -38,6 +39,11 @@ class Common
 
       outputFile.close();
       return true;
+    }
+
+    static void split(const std::string& input, std::vector<std::string>* output, const std::string& sp_char)
+    {
+      boost::split(*output,input, boost::is_any_of(sp_char),boost::token_compress_off);
     }
   private:
 };

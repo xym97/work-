@@ -14,10 +14,11 @@ public:
     }
   }
   
-  void operator << (const std::string& log)
+  std::ofstream& operator << (const std::string& log)
   {
     ofs << log;
     ofs << std::endl;
+    return ofs;
   }
 
   ~LOG()
