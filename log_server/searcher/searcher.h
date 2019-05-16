@@ -1,8 +1,8 @@
 
+#include<algorithm>
 #include<string>
 #include<vector>
 #include<unordered_map>
-#include<algorithm>
 #include"../common/com.hpp"
 #include<jsoncpp/json/json.h>
 #include"/home/ym/cppjieba/include/cppjieba/Jieba.hpp"

@@ -187,11 +187,21 @@ void Server::wf_handler_req()
   std::ofstream ofd; 
   ofd.open((const char*)curfilepath.c_str(), ios::app | ios::out);
   auto it = vtmp.begin();
+  if(0 > flock(cur_file, LOCK_EX | LOCK_NB))
+  {
+    cout <<" lockf error" << endl;
+    return;
+  }
   while(it != vtmp.end())
   { 
     cout << "w ok" << endl;
     ofd << *it;
     ++it;
+  }
+  if(0 > flock(cur_file, LOCK_UN))
+  {
+    cout << "unlockf error" <<endl;
+    return;
   }
   vtow.clear();
 }
@@ -210,21 +220,19 @@ void Server::work_func(int arg)
      static bool flag = false;
      auto it = logs.begin();
      string write;
-     //struct in_addr* addr = (in_addr*)buff;
-     //auto ipit = fd_ip_hash.find(fd);
-     //string ip(ipit->second);
-
+     cout << IsComplete <<endl;
+     cout  << flag <<endl;
      while(it != logs.end() && *it != "")
      {
        write += time_to_write_log_farmat(get_cur_time());
-       //write += ip; 
        write += ' ';
-       if(!IsComplete && flag)
+       if(flag)
        {
+        cout << "enter"<<endl;
         auto rlit = fd_read_leave_hash.find(fd);
         write += rlit->second;
         fd_read_leave_hash.erase(fd);
-        IsComplete = true;
+        flag = false;
        }
        write += *it++;
        write += "\n";
@@ -232,13 +240,8 @@ void Server::work_func(int arg)
      if(!IsComplete)
        flag = true;
      cout << write << endl;
-     //std::thread wf(write_to_file, std::ref(write));
-     //wf.detach();
+     
      write_to_file(write);
-     //epoll_event ev;
-	   //ev.events = EPOLLIN;
-     //ev.data.fd = fd;
-	   //epoll_ctl(epfd, EPOLL_CTL_MOD,fd ,&ev);
   }
   else if(rsize == 0)
   {
@@ -282,9 +285,6 @@ int Server::start_up(const string& ip, const unsigned short port)
 	  exit(3);
 	}
 	cout << "start up success" << endl;
-  //threadpool pool(20);
-  //alarm(SING_TIME);
-  //signal(SIGALRM, handler);
   std::thread of(wf_handler_req);
   of.detach();
   Server::create_file();
@@ -330,8 +330,7 @@ int Server::recvMsgHandler(int listen_sock)
 						return 5;
 					}
           setNoBlock(new_sock);
-          //string ip(inet_ntoa(client_addr.sin_addr));
-          //fd_ip_hash.insert(make_pair(new_sock, ip));
+          
           char* buff = new char[MAX_BUFF_SIZE]();
           fd_buff_hash.insert(make_pair(new_sock, buff));
 					ev.events = EPOLLIN;
@@ -343,10 +342,6 @@ int Server::recvMsgHandler(int listen_sock)
 				{
 	        int new_fd = evs[i].data.fd;
           work_func(new_fd);          
-          //printf("task size = %d\n", size);
-          //ev.events &= ~EPOLLIN;
-          //ev.data.fd = evs[i].data.fd;
-          //epoll_ctl(epfd, EPOLL_CTL_MOD, evs[i].data.fd,&ev);
 				}
 			}
 		

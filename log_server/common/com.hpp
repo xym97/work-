@@ -1,10 +1,12 @@
 
-#include"../log/log.hpp"
+//#include"../log/log.hpp"
+#include<iostream>
+#include<fstream>
 #include<boost/algorithm/string.hpp>
 
 #pragma once
 
-LOG tolog;
+//LOG tolog;
 
 class Common
 {
@@ -14,7 +16,8 @@ class Common
       std::ifstream inputFile(file_path.c_str());
       if(!inputFile.is_open())
       {
-        tolog << "ifstream error!";
+        //tolog << "ifstream error!";
+        std::cout << "ifstream error"<<std::endl; 
         return false;
       }
 
@@ -32,7 +35,8 @@ class Common
       std::ofstream outputFile(file_path.c_str());
       if(!outputFile.is_open())
       {
-        tolog << "ofstream error!";
+        //tolog << "ofstream error!";
+        std::cout << "ofstream error!"  << std::endl; 
         return false;
       }
       outputFile.write(content.c_str(), content.length()); 

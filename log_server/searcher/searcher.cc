@@ -1,14 +1,13 @@
 
-#include "searcher.h"
-#include"../log/log.hpp"
+#include"searcher.h"
 
 namespace searcher
 {
-const char* const DICT_PATH = "./jiebadict/jieba.dict.utf8";
-const char* const HMM_PATH = "./jiebadict/hmm_model.utf8";
-const char* const USER_DICT_PATH = "./jiebadict/user.dict.utf8";
-const char* const IDF_PATH = "./jiebadict/idf.utf8";
-const char* const STOP_WORD_PATH = "./jiebadict/stop_words.utf8";
+const char* const DICT_PATH = "/home/ym/git/log_server/searcher/jiebadict/jieba.dict.utf8";
+const char* const HMM_PATH = "/home/ym/git/log_server/searcher/jiebadict/hmm_model.utf8";
+const char* const USER_DICT_PATH = "/home/ym/git/log_server/searcher/jiebadict/user.dict.utf8";
+const char* const IDF_PATH = "/home/ym/git/log_server/searcher/jiebadict/idf.utf8";
+const char* const STOP_WORD_PATH = "/home/ym/git/log_server/searcher/jiebadict/stop_words.utf8";
 
 const unsigned int DESC_LENGTH = 150;
 const unsigned int F_DESC_LENGTH = 60;
@@ -28,7 +27,8 @@ const Loginfo* Index::construct_forward(const std::string& line)
   Common::split(line, &tokens,"\3");
   if(tokens.size() != 2)
   {
-    tolog << "line error!";
+    //tolog << "line error!"
+    std::cout << "linr error!" <<std::endl;;
     return NULL;
   }
   Loginfo log_info;
@@ -54,12 +54,12 @@ void Index::construct_inverted(const Loginfo& log_info)
   } ;
   
   std::unordered_map<std::string, Wordcnt> str_cnt_map;
-  for(const auto& word : content_tokens)
+  for( auto& word : content_tokens)
   {
     boost::to_lower(word);
     ++str_cnt_map[word].content_cnt;
   }
-  for(const auto& word :title_tokens)
+  for( auto& word :title_tokens)
   {
     boost::to_lower(word);
     ++str_cnt_map[word].title_cnt;
@@ -67,22 +67,21 @@ void Index::construct_inverted(const Loginfo& log_info)
   for(const auto& str_cnt_pair : str_cnt_map)
   {
     Weight weight;
-    weight._weight = str_cnt_pair.second.title_cnt + str_cnt_pair.second.content_cnt;
+    weight._weight = str_cnt_pair.second.title_cnt * 5 + str_cnt_pair.second.content_cnt;
     weight.log_id  = log_info.log_id; 
     weight.key     = str_cnt_pair.first;  
     Invlist& inv_list = in_index[str_cnt_pair.first];
     inv_list.push_back(weight);
-
   }
-  
 }
 
 bool Index::constructer(const std::string& log_path)
 {
   std::ifstream input_file(log_path.c_str());
-  if(input_file.is_open())
+  if(!input_file.is_open())
   {
-    tolog << "ifstream input file  error!";
+    //tolog << "ifstream input file  error!";
+    std::cout << "ifstream input file error!" <<std::endl; 
     return false;
   }
   std::string line;
@@ -136,7 +135,7 @@ bool Searcher::search(std::string& query, std::string* json_result)
   std::vector<std::string> tokens;
   _index->deal_word(query, &tokens);
   std::vector<Weight> all_tokens;
-  for(const std::string word : tokens)
+  for( std::string word : tokens)
   {
     boost::to_lower(word);
     auto* inv_list = _index->get_inverted_list(word);
@@ -145,7 +144,6 @@ bool Searcher::search(std::string& query, std::string* json_result)
       continue;
     }
     all_tokens.insert(all_tokens.end(), inv_list->begin(), inv_list->end());
-
   }
   std::sort(all_tokens.begin(), all_tokens.end(),[](const Weight& w1, const Weight& w2){return w1._weight > w2._weight;});
   
@@ -162,6 +160,6 @@ bool Searcher::search(std::string& query, std::string* json_result)
   }
   Json::FastWriter write;
   *json_result = write.write(results);
+  return true; 
 }
-
 };

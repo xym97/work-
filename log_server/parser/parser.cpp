@@ -52,10 +52,12 @@ bool parse_title(const std::string& log_info, std::string* title)
 
 bool parse_content(std::string& content)
 {
-  for(auto c : content)
+  auto it = content.begin();
+  
+  for(; it != content.end(); ++it)
   {
-    if(c == '\n')
-      c = ' ';
+    if(*it == '\n')
+      *it = ' ';
   }
   return true;
 }
