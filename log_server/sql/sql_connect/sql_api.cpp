@@ -26,39 +26,37 @@ int sqlApi::connect()
 }
 
 //name sex age hobby schoo:wq
-int sqlApi::insert(const string& name, const string& sex, const string& age, const string& hobby, const string& school) 
+int sqlApi::insert(const string& name, const string& key) 
 {
-    string sql = "INSERT INTO http_test1 (name, sex, age, hobby, school) VALUES ('";
+    string sql = "INSERT INTO usrs (name, passward) VALUES ('";
     sql += name;
     sql += "','";
-    sql += sex;
-    sql += "','";
-    sql += age;
-    sql += "','";
-    sql += hobby;
-    sql += "','";
-    sql += school;
+    sql += key;
     sql += "')";
-
 
     int ret = mysql_query(m_conn, sql.c_str());//像数据库插入函数
     if(ret == 0){
-        cout << "insert sucess" << endl;
+        //cout << "insert sucess" << endl;
+        return 0;
     }
     else{
-        cout << "insert faild" << endl;
+        //cout << "insert faild" << endl;
+        return -1;
     }
 
 }
 
-int sqlApi::select()
+int sqlApi::select(const std::string& name, const std::string& key)
 {
-    string sql = "SELECT * FROM http_test1";
+    string sql = "SELECT * FROM usrs WHERE name='";
+    sql += name;
+    sql += "'";
     if(mysql_query(m_conn, sql.c_str()) == 0){
         m_res = mysql_store_result(m_conn);
 
         if(m_res){
             cout << "select success" << endl;
+#if 0
             int rows = mysql_num_rows(m_res);
             int col =  mysql_num_fields(m_res);
             cout << "rows: " << rows << " col: " << col << endl;
@@ -68,7 +66,6 @@ int sqlApi::select()
                 cout << fd->name << " ";
             }
             cout << endl;
-
             int i = 0;
             int j = 0; 
             for(; i < rows; i++){
@@ -80,11 +77,18 @@ int sqlApi::select()
                 cout << endl;
             }
             cout << endl;
+#endif
+          MYSQL_ROW row_res = mysql_fetch_row(m_res);
+          if(strcasecmp(row_res[2] ,key.c_str()) == 0)
+            return 0;
+          else
+            return 2;
         }
         else{
             cout << "select faild" << endl;
         }
     }
+    return 1;
     //mysql_store_result(mconn);
 }
 

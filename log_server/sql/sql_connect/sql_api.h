@@ -13,8 +13,8 @@ class sqlApi{
 public:
     sqlApi(const string &h, const int port, const string &u, const string &p, const string &db);
     //name sex age hobby school
-    int insert(const string& name, const string& sex, const string& age, const string& hobby, const string& school); 
-    int select();
+    int insert(const string& name, const string& key); 
+    int select(const std::string& name, const std::string& key);
     int connect();
     ~sqlApi();
 private:
