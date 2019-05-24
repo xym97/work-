@@ -87,15 +87,6 @@ void Server::create_file()
   cur_file = ret;
 }
 
-//void Server::handler(const int sig)
-//{
-//  printf("recv %d sig create new file", sig);
-//  alarm(SING_TIME);
-//  if(cur_file != -1)
-//     close(cur_file);
-//  Server::create_file();
-//}
-//定时创建新日志文件的线程入口函数  (还有问题，这个函数并没有开放使用)
 void* Server::cf_handler_req()
 {
   //(void)arg;
@@ -176,6 +167,8 @@ void Server::write_to_file(string& arg)
 void Server::wf_handler_req()
 {
   vector<string> vtmp;
+  while(true)
+  {
   std::unique_lock<std::mutex> lc_of(_ofmut);
   {
     if(vtow.empty())
@@ -203,7 +196,9 @@ void Server::wf_handler_req()
     cout << "unlockf error" <<endl;
     return;
   }
-  vtow.clear();
+  vtmp.clear();
+
+  }
 }
 
 void Server::work_func(int arg)

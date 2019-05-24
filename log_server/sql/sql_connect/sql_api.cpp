@@ -79,10 +79,12 @@ int sqlApi::select(const std::string& name, const std::string& key)
             cout << endl;
 #endif
           MYSQL_ROW row_res = mysql_fetch_row(m_res);
-          if(strcasecmp(row_res[2] ,key.c_str()) == 0)
+          if(strcasecmp(row_res[2] ,key.c_str()) == 0){
             return 0;
-          else
+          }
+          else{
             return 2;
+          }
         }
         else{
             cout << "select faild" << endl;
