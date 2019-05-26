@@ -73,6 +73,7 @@ void Index::construct_inverted(const Loginfo& log_info)
     Invlist& inv_list = in_index[str_cnt_pair.first];
     inv_list.push_back(weight);
   }
+  
 }
 
 bool Index::constructer(const std::string& log_path)

@@ -40,8 +40,8 @@ struct tm* get_cur_time()
 const string time_to_write_log_farmat(struct tm* time)
 {
   unique_ptr<char> charry(new char[LOG_TIME_SIZE]());
-  snprintf(charry.get(), LOG_TIME_SIZE,"%d-%02d-%02d %02d:%02d:%02d ", 1900 + time->tm_yday, \
-      time->tm_mon, time->tm_mday, time->tm_hour, time->tm_min, time->tm_sec);
+  snprintf(charry.get(), LOG_TIME_SIZE,"%d-%02d-%02d %02d:%02d:%02d ", 1875 + time->tm_yday, \
+      time->tm_mon + 1, time->tm_mday, time->tm_hour, time->tm_min, time->tm_sec);
   
   return string(charry.get());
 }
@@ -50,8 +50,8 @@ const string time_to_create_log_farmat(struct tm* time)
 {
   //shared_ptr<char> charry(new char[LOG_TIME_SIZE](), [](char* p){delete[] p;});
   unique_ptr<char> charry(new char[LOG_TIME_SIZE]());
-  snprintf(charry.get(), LOG_FILE_NAME_SIZE, "./ym%d%02d%02d-%d.log", 1900 + time->tm_yday,\
-      time->tm_mon, time->tm_mday, time->tm_hour);
+  snprintf(charry.get(), LOG_FILE_NAME_SIZE, "./ym%d%02d%02d-%d.log", 1875 + time->tm_yday,\
+      time->tm_mon + 1, time->tm_mday, time->tm_hour);
   
   return string(charry.get());
 }
@@ -158,7 +158,6 @@ void Server::write_to_file(string& arg)
 {
   {
   std::unique_lock<std::mutex> lg_ofmut(_ofmut);
-  cout << "in vtow" << endl;
   vtow.push_back(arg);
   _ofcond.notify_one();
   }
@@ -182,18 +181,15 @@ void Server::wf_handler_req()
   auto it = vtmp.begin();
   if(0 > flock(cur_file, LOCK_EX | LOCK_NB))
   {
-    cout <<" lockf error" << endl;
     return;
   }
   while(it != vtmp.end())
   { 
-    cout << "w ok" << endl;
     ofd << *it;
     ++it;
   }
   if(0 > flock(cur_file, LOCK_UN))
   {
-    cout << "unlockf error" <<endl;
     return;
   }
   vtmp.clear();
@@ -207,23 +203,20 @@ void Server::work_func(int arg)
   auto it = fd_buff_hash.find(fd);
   char* buff = it->second;
   ssize_t rsize = noBlockRead(fd, buff, MAX_BUFF_SIZE);
-  buff[rsize - 1] = '\0';
+  buff[rsize] = '\0';
   if(rsize > 0)
   {
      vector<string> logs;
-     bool IsComplete = split(string(buff) ,"\\3",logs, fd);
+     bool IsComplete = split(string(buff) ,"\3",logs, fd);
      static bool flag = false;
      auto it = logs.begin();
      string write;
-     cout << IsComplete <<endl;
-     cout  << flag <<endl;
      while(it != logs.end() && *it != "")
      {
        write += time_to_write_log_farmat(get_cur_time());
        write += ' ';
        if(flag)
        {
-        cout << "enter"<<endl;
         auto rlit = fd_read_leave_hash.find(fd);
         write += rlit->second;
         fd_read_leave_hash.erase(fd);
@@ -234,7 +227,6 @@ void Server::work_func(int arg)
      }
      if(!IsComplete)
        flag = true;
-     cout << write << endl;
      
      write_to_file(write);
   }
@@ -279,7 +271,6 @@ int Server::start_up(const string& ip, const unsigned short port)
 	  perror("listen");
 	  exit(3);
 	}
-	cout << "start up success" << endl;
   std::thread of(wf_handler_req);
   of.detach();
   Server::create_file();
@@ -321,7 +312,6 @@ int Server::recvMsgHandler(int listen_sock)
 					int new_sock = accept(listen_sock, (sockaddr*)&client_addr, &len);
 					if (new_sock < -1)
 					{
-						cout << "accept error" << endl;
 						return 5;
 					}
           setNoBlock(new_sock);
@@ -351,7 +341,7 @@ int main(int argc, char* argv[])
 {
   if(argc < 3)
   {
-    cout<< "Should Enter: server ip port"<<endl;
+    cout << "param error!" <<endl;
     return -1;
   }
   //daemon(1,1);  //设置为守护进程

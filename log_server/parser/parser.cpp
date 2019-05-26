@@ -14,7 +14,7 @@ struct log_doc
   std::string content;
 };
 
-//LOG tolog;
+//LOG std::cout;
 
 bool enum_log(const std::string& glog_path, std::vector<std::string>* log_list)
 {
@@ -22,7 +22,7 @@ bool enum_log(const std::string& glog_path, std::vector<std::string>* log_list)
   FS::path root_path(glog_path);
   if(!FS::exists(root_path))
   {
-    tolog << "root_path error";
+    std::cout << "root_path error";
     return false;
   }
 
@@ -43,7 +43,7 @@ bool parse_title(const std::string& log_info, std::string* title)
   size_t e_index = log_info.find("\n");
   if(e_index == std::string::npos)
   {
-    tolog << "find \\n error!";
+    std::cout << "find \\n error!";
     return false;
   }
   *title = log_info.substr(0,e_index);
@@ -68,14 +68,14 @@ bool parse_file(const std::string& log_path, log_doc* parsed_log_doc)
   bool ret = Common::ReadFile(log_path,/*&log_info*/&parsed_log_doc->content );
   if(false == ret)
   {
-    tolog << "ReadFile error!";
+    std::cout << "ReadFile error!";
     return false;
   }
   //size_t content_b_index;
   ret = parse_title(/*log_info*/parsed_log_doc->content , &parsed_log_doc->title);
   if(false == ret)
   {
-    tolog << "parse_title error!";
+    std::cout << "parse_title error!";
     return false;
   }
   ret = parse_content(parsed_log_doc->content);
@@ -88,21 +88,22 @@ void write_to_outlog(const log_doc& doc, std::ofstream& olog)
   olog.write(line.c_str() , line.length());
 }
 
-int main()
+//int main()
+
+void* parse_handler(void)
 {
   std::vector<std::string> log_list;
   bool ret = enum_log(glog_path, &log_list);
   if(false == ret)
   {
-    tolog << "enum log errpr!"; 
-    return 1;
+    std::cout << "enum log errpr!"; 
   }
 
   std::ofstream olog; 
   olog.open(glog_output.c_str());
   if(!olog.is_open())
   {
-    tolog  << "open log output file error!";
+    std::cout  << "open log output file error!";
   }
   for(const auto& log_path  : log_list)
   {
@@ -110,7 +111,7 @@ int main()
     ret = parse_file(log_path, &info);
     if(false == ret)
     {
-      tolog << "parse file error path:";
+      std::cout << "parse file error path:";
       continue;
     }
     write_to_outlog(info, olog);
@@ -118,7 +119,6 @@ int main()
   olog.close();
   return 0;
 }
-
 
 
 

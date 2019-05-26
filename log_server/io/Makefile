@@ -1,11 +1,11 @@
 
 all:client server
 
-client: client.c
-	g++ -o $@ $^ -std=c++11 -g -pthread
+client: client.cc
+	g++ -o $@ $^ -pthread
 
 server: server.cc 
-	g++ -o $@ $^ -std=c++11 -g -pthread
+	g++ -o $@ $^ -std=c++11 -pthread
 
 .PHONY:clean
 
